@@ -30,7 +30,7 @@ const Team = mongoose.model('Team', teamSchema);
 // Clues data
 const cluesdata = {
   
-    group01: {
+    group1: {
       'First Clue': '1 ',
       'Second Clue': '1',
       'Third Clue': '1',
@@ -38,7 +38,7 @@ const cluesdata = {
       'Fifth Clue': '1',
       'Sixth Clue': '1',
     },
-    group02: {
+    group2: {
       'First Clue': '2',
       'Second Clue': '2',
       'Third Clue': '2',
@@ -46,7 +46,7 @@ const cluesdata = {
       'Fifth Clue': '2',
       'Sixth Clue': '2',
     },
-    group03: {
+    group3: {
       'First Clue': '3',
       'Second Clue': '3',
       'Third Clue': '3',
@@ -54,7 +54,7 @@ const cluesdata = {
       'Fifth Clue': '3',
       'Sixth Clue': '3',
     },
-    group04: {
+    group4: {
       'First Clue': '4',
       'Second Clue': '4',
       'Third Clue': '4',
@@ -62,7 +62,7 @@ const cluesdata = {
       'Fifth Clue': '4',
       'Sixth Clue': '4',
     },
-    group05: {
+    group5: {
       'First Clue': '5',
       'Second Clue': '5',
       'Third Clue': '5',
@@ -70,7 +70,7 @@ const cluesdata = {
       'Fifth Clue': '5',
       'Sixth Clue': '5',
     },
-    group06: {
+    group6: {
       'First Clue': '6',
       'Second Clue': '6',
       'Third Clue': '6',
