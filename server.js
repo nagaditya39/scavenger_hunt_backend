@@ -31,85 +31,53 @@ const Team = mongoose.model('Team', teamSchema);
 const cluesdata = {
   
     group01: {
-      'First Clue': 'A1B1C1 ',
-      'Second Clue': 'A1B1C1',
-      'Third Clue': 'A1B1C1',
-      'Fourth Clue': 'A1B1C1',
-      'Fifth Clue': 'A1B1C1',
-      'Sixth Clue': 'A1B1C1',
+      'First Clue': '1 ',
+      'Second Clue': '1',
+      'Third Clue': '1',
+      'Fourth Clue': '1',
+      'Fifth Clue': '1',
+      'Sixth Clue': '1',
     },
     group02: {
-      'First Clue': 'A2B2C2',
-      'Second Clue': 'A2B2C2',
-      'Third Clue': 'A2B2C2',
-      'Fourth Clue': 'A2B2C2',
-      'Fifth Clue': 'A2B2C2',
-      'Sixth Clue': 'A2B2C2',
+      'First Clue': '2',
+      'Second Clue': '2',
+      'Third Clue': '2',
+      'Fourth Clue': '2',
+      'Fifth Clue': '2',
+      'Sixth Clue': '2',
     },
     group03: {
-      'First Clue': 'A3B3C3',
-      'Second Clue': 'A3B3C3',
-      'Third Clue': 'A3B3C3',
-      'Fourth Clue': 'A3B3C3',
-      'Fifth Clue': 'A3B3C3',
-      'Sixth Clue': 'A3B3C3',
+      'First Clue': '3',
+      'Second Clue': '3',
+      'Third Clue': '3',
+      'Fourth Clue': '3',
+      'Fifth Clue': '3',
+      'Sixth Clue': '3',
     },
     group04: {
-      'First Clue': 'A4B4C4',
-      'Second Clue': 'A4B4C4',
-      'Third Clue': 'A4B4C4',
-      'Fourth Clue': 'A4B4C4',
-      'Fifth Clue': 'A4B4C4',
-      'Sixth Clue': 'A4B4C4',
+      'First Clue': '4',
+      'Second Clue': '4',
+      'Third Clue': '4',
+      'Fourth Clue': '4',
+      'Fifth Clue': '4',
+      'Sixth Clue': '4',
     },
     group05: {
-      'First Clue': 'A5B5C5',
-      'Second Clue': 'A5B5C5',
-      'Third Clue': 'A5B5C5',
-      'Fourth Clue': 'A5B5C5',
-      'Fifth Clue': 'A5B5C5',
-      'Sixth Clue': 'A5B5C5',
+      'First Clue': '5',
+      'Second Clue': '5',
+      'Third Clue': '5',
+      'Fourth Clue': '5',
+      'Fifth Clue': '5',
+      'Sixth Clue': '5',
     },
     group06: {
-      'First Clue': 'A6B6C6',
-      'Second Clue': 'A6B6C6',
-      'Third Clue': 'A6B6C6',
-      'Fourth Clue': 'A6B6C6',
-      'Fifth Clue': 'A6B6C6',
-      'Sixth Clue': 'A6B6C6',
-    },
-    group07: {
-      'First Clue': 'A7B7C7',
-      'Second Clue': 'A7B7C7',
-      'Third Clue': 'A7B7C7',
-      'Fourth Clue': 'A7B7C7',
-      'Fifth Clue': 'A7B7C7',
-      'Sixth Clue': 'A7B7C7',
-    },
-    group08: {
-      'First Clue': 'A8B8C8',
-      'Second Clue': 'A8B8C8',
-      'Third Clue': 'A8B8C8',
-      'Fourth Clue': 'A8B8C8',
-      'Fifth Clue': 'A8B8C8',
-      'Sixth Clue': 'A8B8C8',
-    },
-    group09: {
-      'First Clue': 'A9B9C9',
-      'Second Clue': 'A9B9C9',
-      'Third Clue': 'A9B9C9',
-      'Fourth Clue': 'A9B9C9',
-      'Fifth Clue': 'A9B9C9',
-      'Sixth Clue': 'A9B9C9',
-    },
-    group10: {
-      'First Clue': '10',
-      'Second Clue': '10',
-      'Third Clue': '10',
-      'Fourth Clue': '10',
-      'Fifth Clue': '10',
-      'Sixth Clue': '10',
-    },
+      'First Clue': '6',
+      'Second Clue': '6',
+      'Third Clue': '6',
+      'Fourth Clue': '6',
+      'Fifth Clue': '6',
+      'Sixth Clue': '6',
+    }
   };
 
 function checkCode(group, code) {
@@ -124,32 +92,72 @@ app.post('/api/check-code', async (req, res) => {
   const clue = checkCode(group, code);
   
   if (clue) {
-    // Update team progress
-    await Team.findOneAndUpdate(
-      { name: teamName, group: group },
-      { $push: { progress: { clue: clue, found: true, timestamp: new Date() } } },
-      { upsert: true, new: true }
-    );
-    
-    res.json({ success: true, clue: clue });
+    try {
+      const team = await Team.findOne({ name: teamName, group: group });
+      
+      if (team) {
+        // Check if the clue is already found
+        const clueAlreadyFound = team.progress.some(p => p.clue === clue);
+        
+        if (!clueAlreadyFound) {
+          // Add the new clue to the progress
+          team.progress.push({ clue: clue, found: true, timestamp: new Date() });
+          await team.save();
+        }
+      } else {
+        // Create a new team if it doesn't exist
+        await Team.create({
+          name: teamName,
+          group: group,
+          progress: [{ clue: clue, found: true, timestamp: new Date() }]
+        });
+      }
+      
+      res.json({ success: true, clue: clue });
+    } catch (error) {
+      console.error('Error updating team progress:', error);
+      res.status(500).json({ success: false, message: 'Server error' });
+    }
   } else {
     res.json({ success: false, message: 'Invalid code' });
   }
 });
 
 app.get('/api/public-progress', async (req, res) => {
-  const teams = await Team.find({}, 'name group progress');
-  res.json(teams);
-});
+    try {
+      const teams = await Team.find({}, 'name group progress');
+      const publicProgress = teams.map(team => ({
+        name: team.name,
+        group: team.group,
+        cluesFound: team.progress.length
+      }));
+      res.json(publicProgress);
+    } catch (error) {
+      console.error('Error fetching public progress:', error);
+      res.status(500).json({ message: 'Server error' });
+    }
+  });
 
-app.get('/api/team-progress/:teamName', async (req, res) => {
-  const team = await Team.findOne({ name: req.params.teamName });
-  if (team) {
-    res.json(team);
-  } else {
-    res.status(404).json({ message: 'Team not found' });
-  }
-});
+  app.get('/api/team-progress/:teamName', async (req, res) => {
+    try {
+      const team = await Team.findOne({ name: req.params.teamName });
+      if (team) {
+        res.json({
+          name: team.name,
+          group: team.group,
+          progress: team.progress.map(p => ({
+            clue: p.clue,
+            timestamp: p.timestamp
+          }))
+        });
+      } else {
+        res.status(404).json({ message: 'Team not found' });
+      }
+    } catch (error) {
+      console.error('Error fetching team progress:', error);
+      res.status(500).json({ message: 'Server error' });
+    }
+  });
 
 app.listen(port, () => {
   console.log(`Scavenger Hunt API listening on port ${port}`);
