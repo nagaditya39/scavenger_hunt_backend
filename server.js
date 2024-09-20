@@ -15,7 +15,6 @@ app.use(bodyParser.json());
 mongoose.connect(process.env.MONGODB_URI, { 
   useNewUrlParser: true, 
   useUnifiedTopology: true,
-  poolSize : 10,
   serverSelectionTimeoutMS: 5000,
   socketTimeoutMS: 45000,
 });
