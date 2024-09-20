@@ -7,18 +7,12 @@ const app = express();
 const port = process.env.PORT || 3000;
 
 app.use(cors({
-    origin: 'https://nagaditya39.github.io',
-    methods: ['GET', 'POST'],
-    allowedHeaders: ['Content-Type', 'Authorization']
+    origin: 'https://nagaditya39.github.io'
 }));
-
 app.use(bodyParser.json());
 
 // Connect to MongoDB Atlas
-mongoose.connect(process.env.MONGODB_URI, { 
-  useNewUrlParser: true, 
-  useUnifiedTopology: true,
-});
+mongoose.connect(process.env.MONGODB_URI, { useNewUrlParser: true, useUnifiedTopology: true });
 
 // Define Team Schema
 const teamSchema = new mongoose.Schema({
@@ -33,7 +27,6 @@ const teamSchema = new mongoose.Schema({
 
 teamSchema.index({ name: 1, group: 1 }, { unique: true });
 const Team = mongoose.model('Team', teamSchema);
-
 
 // Clues data
 const cluesdata = {
@@ -101,41 +94,35 @@ app.post('/api/check-code', async (req, res) => {
   
   if (clue) {
     try {
-      const currentTime = new Date();
-      const team = await Team.findOneAndUpdate(
-        { name: teamName, group: group },
-        { 
-          $setOnInsert: { name: teamName, group: group },
-          $push: {
-            progress: {
-              $each: [{ clue: clue, found: true, timestamp: currentTime }],
-              $sort: { timestamp: 1 },
-              $filter: {
-                input: "$progress",
-                as: "item",
-                cond: { $ne: ["$$item.clue", clue] }
-              }
-            }
-          }
-        },
-        { upsert: true, new: true, runValidators: true }
-      );
+      const team = await Team.findOne({ name: teamName, group: group });
+      
+      if (team) {
+        // Check if the clue is already found
+        const clueAlreadyFound = team.progress.some(p => p.clue === clue);
+        
+        if (!clueAlreadyFound) {
+          // Add the new clue to the progress
+          team.progress.push({ clue: clue, found: true, timestamp: new Date() });
+          await team.save();
+        }
+      } else {
+        // Create a new team if it doesn't exist
+        await Team.create({
+          name: teamName,
+          group: group,
+          progress: [{ clue: clue, found: true, timestamp: new Date() }]
+        });
+      }
       
       res.json({ success: true, clue: clue });
     } catch (error) {
-      if (error.code === 11000) {
-        // Duplicate key error
-        res.status(409).json({ success: false, message: 'Team already exists' });
-      } else {
-        console.error('Error updating team progress:', error);
-        res.status(500).json({ success: false, message: 'Server error' });
-      }
+      console.error('Error updating team progress:', error);
+      res.status(500).json({ success: false, message: 'Server error' });
     }
   } else {
     res.json({ success: false, message: 'Invalid code' });
   }
 });
-
 
 app.get('/api/public-progress', async (req, res) => {
     try {
