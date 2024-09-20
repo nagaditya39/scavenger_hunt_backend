@@ -35,52 +35,52 @@ const Team = mongoose.model('Team', teamSchema);
 const cluesdata = {
   
   group1: [
-    { name: 'First Clue', code: '1a' },
-    { name: 'Second Clue', code: '1b' },
-    { name: 'Third Clue', code: '1c' },
-    { name: 'Fourth Clue', code: '1d' },
-    { name: 'Fifth Clue', code: '1e' },
-    { name: 'Sixth Clue', code: '1f' },
+    { number: 1, code: '1a', content: 'Actual content of first clue for group 1' },
+    { number: 2, code: '1b', content: 'Actual content of second clue for group 1' },
+    { number: 3, code: '1c', content: 'Actual content of third clue for group 1' },
+    { number: 4, code: '1d', content: 'Actual content of fourth clue for group 1' },
+    { number: 5, code: '1e', content: 'Actual content of fifth clue for group 1' },
+    { number: 6, code: '1f', content: 'Actual content of sixth clue for group 1' },
   ],
   group2: [
-    { name: 'First Clue', code: '2a' },
-    { name: 'Second Clue', code: '2b' },
-    { name: 'Third Clue', code: '2c' },
-    { name: 'Fourth Clue', code: '2d' },
-    { name: 'Fifth Clue', code: '2e' },
-    { name: 'Sixth Clue', code: '2f' },
+    { number: 1, code: '1a', content: 'Actual content of first clue for group 1' },
+    { number: 2, code: '1b', content: 'Actual content of second clue for group 1' },
+    { number: 3, code: '1c', content: 'Actual content of third clue for group 1' },
+    { number: 4, code: '1d', content: 'Actual content of fourth clue for group 1' },
+    { number: 5, code: '1e', content: 'Actual content of fifth clue for group 1' },
+    { number: 6, code: '1f', content: 'Actual content of sixth clue for group 1' },
   ],
   group3: [
-    { name: 'First Clue', code: '1a' },
-    { name: 'Second Clue', code: '1b' },
-    { name: 'Third Clue', code: '1c' },
-    { name: 'Fourth Clue', code: '1d' },
-    { name: 'Fifth Clue', code: '1e' },
-    { name: 'Sixth Clue', code: '1f' },
+    { number: 1, code: '1a', content: 'Actual content of first clue for group 1' },
+    { number: 2, code: '1b', content: 'Actual content of second clue for group 1' },
+    { number: 3, code: '1c', content: 'Actual content of third clue for group 1' },
+    { number: 4, code: '1d', content: 'Actual content of fourth clue for group 1' },
+    { number: 5, code: '1e', content: 'Actual content of fifth clue for group 1' },
+    { number: 6, code: '1f', content: 'Actual content of sixth clue for group 1' },
   ],
   group4: [
-    { name: 'First Clue', code: '2a' },
-    { name: 'Second Clue', code: '2b' },
-    { name: 'Third Clue', code: '2c' },
-    { name: 'Fourth Clue', code: '2d' },
-    { name: 'Fifth Clue', code: '2e' },
-    { name: 'Sixth Clue', code: '2f' },
+    { number: 1, code: '1a', content: 'Actual content of first clue for group 1' },
+    { number: 2, code: '1b', content: 'Actual content of second clue for group 1' },
+    { number: 3, code: '1c', content: 'Actual content of third clue for group 1' },
+    { number: 4, code: '1d', content: 'Actual content of fourth clue for group 1' },
+    { number: 5, code: '1e', content: 'Actual content of fifth clue for group 1' },
+    { number: 6, code: '1f', content: 'Actual content of sixth clue for group 1' },
   ],
   group5: [
-    { name: 'First Clue', code: '1a' },
-    { name: 'Second Clue', code: '1b' },
-    { name: 'Third Clue', code: '1c' },
-    { name: 'Fourth Clue', code: '1d' },
-    { name: 'Fifth Clue', code: '1e' },
-    { name: 'Sixth Clue', code: '1f' },
+    { number: 1, code: '1a', content: 'Actual content of first clue for group 1' },
+    { number: 2, code: '1b', content: 'Actual content of second clue for group 1' },
+    { number: 3, code: '1c', content: 'Actual content of third clue for group 1' },
+    { number: 4, code: '1d', content: 'Actual content of fourth clue for group 1' },
+    { number: 5, code: '1e', content: 'Actual content of fifth clue for group 1' },
+    { number: 6, code: '1f', content: 'Actual content of sixth clue for group 1' },
   ],
   group6: [
-    { name: 'First Clue', code: '2a' },
-    { name: 'Second Clue', code: '2b' },
-    { name: 'Third Clue', code: '2c' },
-    { name: 'Fourth Clue', code: '2d' },
-    { name: 'Fifth Clue', code: '2e' },
-    { name: 'Sixth Clue', code: '2f' },
+    { number: 1, code: '1a', content: 'Actual content of first clue for group 1' },
+    { number: 2, code: '1b', content: 'Actual content of second clue for group 1' },
+    { number: 3, code: '1c', content: 'Actual content of third clue for group 1' },
+    { number: 4, code: '1d', content: 'Actual content of fourth clue for group 1' },
+    { number: 5, code: '1e', content: 'Actual content of fifth clue for group 1' },
+    { number: 6, code: '1f', content: 'Actual content of sixth clue for group 1' },
   ],
   };
 
@@ -89,7 +89,7 @@ const cluesdata = {
     if (currentClueIndex >= clues.length) {
       return null;
     }
-    return clues[currentClueIndex].code === code ? clues[currentClueIndex].name : null;
+    return clues[currentClueIndex].code === code ? clues[currentClueIndex] : null;
   }
   
   // Routes
@@ -120,17 +120,16 @@ const cluesdata = {
       const clue = checkCode(group, code, currentClueIndex);
       
       if (clue) {
-        team.progress.push({ clue: clue, found: true, timestamp: new Date() });
+        team.progress.push({ clueNumber: clue.number, found: true, timestamp: new Date() });
         await team.save();
         
-        const nextClueIndex = currentClueIndex + 1;
-        const nextClue = nextClueIndex < cluesdata[group].length ? cluesdata[group][nextClueIndex].name : null;
+        const nextClueNumber = currentClueIndex + 2; // +2 because we're 0-indexed and want to show the human-readable number
         
         res.json({ 
           success: true, 
-          clue: clue, 
+          clueContent: clue.content,
           cluesFound: team.progress.length,
-          nextClue: nextClue
+          nextClueNumber: nextClueNumber <= cluesdata[group].length ? nextClueNumber : null
         });
       } else {
         res.json({ success: false, message: 'Invalid code or not the current clue' });
@@ -140,6 +139,7 @@ const cluesdata = {
       res.status(500).json({ success: false, message: 'Server error', error: error.message });
     }
   });
+
 
   
   app.get('/api/public-progress', async (req, res) => {
@@ -163,13 +163,13 @@ app.get('/api/team-progress/:teamName/:group', async (req, res) => {
     const team = await Team.findOne({ name: teamName, group: group });
     if (team) {
       const currentClueIndex = team.progress.length;
-      const nextClue = currentClueIndex < cluesdata[group].length ? cluesdata[group][currentClueIndex].name : null;
+      const nextClueNumber = currentClueIndex + 1;
       res.json({ 
         cluesFound: team.progress.length,
-        nextClue: nextClue
+        nextClueNumber: nextClueNumber <= cluesdata[group].length ? nextClueNumber : null
       });
     } else {
-      res.json({ cluesFound: 0, nextClue: cluesdata[group][0].name });
+      res.json({ cluesFound: 0, nextClueNumber: 1 });
     }
   } catch (error) {
     console.error('Error fetching team progress:', error);
