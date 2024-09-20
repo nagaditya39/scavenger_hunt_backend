@@ -112,7 +112,8 @@ const cluesdata = {
           if (createError.code === 11000) {
             team = await Team.findOne({ name: teamName, group: group });
           } else {
-            throw createError;
+            console.error('Error creating team:', createError);
+            return res.status(500).json({ success: false, message: 'Error creating team' });
           }
         }
       }
@@ -133,15 +134,11 @@ const cluesdata = {
           nextClueNumber: nextClueNumber <= cluesdata[group].length ? nextClueNumber : null
         });
       } else {
-        res.json({ 
-          success: true, 
-          clueContent: clue.content,
-          cluesFound: team.progress.length,
-          nextClueNumber: nextClueNumber <= cluesdata[group].length ? nextClueNumber : null
-        });
+        // Invalid code - send a proper response instead of throwing an error
+        res.json({ success: false, message: 'Invalid code or not the current clue' });
       }
     } catch (error) {
-      console.error('Error updating team progress:', error);
+      console.error('Error checking code:', error);
       res.status(500).json({ success: false, message: 'Server error', error: error.message });
     }
   });
@@ -163,7 +160,7 @@ const cluesdata = {
   }
 });
 
-app.get('/api/team-progress/:teamName/:group', async (req, res) => {
+  app.get('/api/team-progress/:teamName/:group', async (req, res) => {
   const { teamName, group } = req.params;
   try {
     const team = await Team.findOne({ name: teamName, group: group });
@@ -185,7 +182,7 @@ app.get('/api/team-progress/:teamName/:group', async (req, res) => {
   }
 });
 
-app.get('/api/team-position/:teamName/:group', async (req, res) => {
+  app.get('/api/team-position/:teamName/:group', async (req, res) => {
   const { teamName, group } = req.params;
   try {
     // Find all teams that have completed all 6 clues
