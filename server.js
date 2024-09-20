@@ -6,7 +6,12 @@ const mongoose = require('mongoose');
 const app = express();
 const port = process.env.PORT || 3000;
 
-app.use(cors({}));
+const corsOptions = {
+  origin: 'https://nagaditya39.github.io',
+  optionsSuccessStatus: 200
+};
+
+app.use(cors(corsOptions));
 app.use(bodyParser.json());
 
 
@@ -89,11 +94,20 @@ function checkCode(group, code) {
 app.post('/api/check-code', async (req, res) => {
   const { group, code, teamName } = req.body;
   
+  // Input validation
+  if (!group || !code || !teamName) {
+    return res.status(400).json({ success: false, message: 'Missing required fields' });
+  }
+  
+  if (!cluesdata[group]) {
+    return res.status(400).json({ success: false, message: 'Invalid group' });
+  }
+
   const clue = checkCode(group, code);
   
   if (clue) {
     try {
-      const team = await Team.findOne({ name: teamName, group: group });
+      let team = await Team.findOne({ name: teamName, group: group });
       
       if (team) {
         // Check if the clue is already found
@@ -106,22 +120,23 @@ app.post('/api/check-code', async (req, res) => {
         }
       } else {
         // Create a new team if it doesn't exist
-        await Team.create({
+        team = await Team.create({
           name: teamName,
           group: group,
           progress: [{ clue: clue, found: true, timestamp: new Date() }]
         });
       }
       
-      res.json({ success: true, clue: clue });
+      res.json({ success: true, clue: clue, progress: team.progress.length });
     } catch (error) {
       console.error('Error updating team progress:', error);
-      res.status(500).json({ success: false, message: 'Server error' });
+      res.status(500).json({ success: false, message: 'Server error', error: error.message });
     }
   } else {
     res.json({ success: false, message: 'Invalid code' });
   }
 });
+
 
 app.get('/api/public-progress', async (req, res) => {
     try {
