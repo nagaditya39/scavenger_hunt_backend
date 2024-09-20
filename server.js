@@ -182,18 +182,17 @@ const cluesdata = {
   }
 });
 
-  app.get('/api/team-position/:teamName/:group', async (req, res) => {
+app.get('/api/team-position/:teamName/:group', async (req, res) => {
   const { teamName, group } = req.params;
   try {
     // Find all teams that have completed all 6 clues
     const completedTeams = await Team.find({ 
-      'progress.6': { $exists: true } 
+      group: group,
+      'progress.5': { $exists: true } // Check for the 6th clue (index 5)
     }).sort({ 'progress.5.timestamp': 1 });
 
     // Find the position of the current team
-    const position = completedTeams.findIndex(team => 
-      team.name === teamName && team.group === group
-    ) + 1; // Add 1 because array index is 0-based
+    const position = completedTeams.findIndex(team => team.name === teamName) + 1; // Add 1 because array index is 0-based
 
     if (position > 0) {
       res.json({ position });
