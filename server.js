@@ -101,34 +101,36 @@ const cluesdata = {
       return res.status(400).json({ success: false, message: 'Invalid group' });
     }
   
-    const clue = checkCode(group, code);
-    
-    if (clue) {
-      try {
-        let team = await Team.findOne({ name: teamName, group: group });
+    try {
+      let team = await Team.findOne({ name: teamName, group: group });
+      
+      if (!team) {
+        // If the team doesn't exist, create it
+        team = await Team.create({
+          name: teamName,
+          group: group,
+          progress: []
+        });
+      }
+  
+      // Check if the code is valid for this team's group
+      const clue = checkCode(group, code);
+      
+      if (clue) {
+        const clueAlreadyFound = team.progress.some(p => p.clue === clue);
         
-        if (team) {
-          const clueAlreadyFound = team.progress.some(p => p.clue === clue);
-          
-          if (!clueAlreadyFound) {
-            team.progress.push({ clue: clue, found: true, timestamp: new Date() });
-            await team.save();
-          }
-        } else {
-          team = await Team.create({
-            name: teamName,
-            group: group,
-            progress: [{ clue: clue, found: true, timestamp: new Date() }]
-          });
+        if (!clueAlreadyFound) {
+          team.progress.push({ clue: clue, found: true, timestamp: new Date() });
+          await team.save();
         }
         
         res.json({ success: true, clue: clue, cluesFound: team.progress.length });
-      } catch (error) {
-        console.error('Error updating team progress:', error);
-        res.status(500).json({ success: false, message: 'Server error', error: error.message });
+      } else {
+        res.json({ success: false, message: 'Invalid code for this team' });
       }
-    } else {
-      res.json({ success: false, message: 'Invalid code' });
+    } catch (error) {
+      console.error('Error updating team progress:', error);
+      res.status(500).json({ success: false, message: 'Server error', error: error.message });
     }
   });
   
