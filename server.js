@@ -101,11 +101,20 @@ const cluesdata = {
       
       if (!team) {
         // If the team doesn't exist, create it
-        team = await Team.create({
-          name: teamName,
-          group: group,
-          progress: []
-        });
+        try {
+          team = await Team.create({
+            name: teamName,
+            group: group,
+            progress: []
+          });
+        } catch (createError) {
+          // If creation fails due to duplicate key, find the existing team
+          if (createError.code === 11000) {
+            team = await Team.findOne({ name: teamName, group: group });
+          } else {
+            throw createError;
+          }
+        }
       }
   
       const currentClueIndex = team.progress.length;
