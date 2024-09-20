@@ -14,7 +14,6 @@ const corsOptions = {
 app.use(cors(corsOptions));
 app.use(bodyParser.json());
 
-
 // Connect to MongoDB Atlas
 mongoose.connect(process.env.MONGODB_URI, { useNewUrlParser: true, useUnifiedTopology: true });
 
@@ -85,60 +84,55 @@ const cluesdata = {
     }
   };
 
-function checkCode(group, code) {
-  const clues = cluesdata[group];
-  return Object.keys(clues).find(clue => clues[clue] === code) || null;
-}
-
-// Routes
-app.post('/api/check-code', async (req, res) => {
-  const { group, code, teamName } = req.body;
-  
-  // Input validation
-  if (!group || !code || !teamName) {
-    return res.status(400).json({ success: false, message: 'Missing required fields' });
+  function checkCode(group, code) {
+    const clues = cluesdata[group];
+    return Object.keys(clues).find(clue => clues[clue] === code) || null;
   }
   
-  if (!cluesdata[group]) {
-    return res.status(400).json({ success: false, message: 'Invalid group' });
-  }
-
-  const clue = checkCode(group, code);
-  
-  if (clue) {
-    try {
-      let team = await Team.findOne({ name: teamName, group: group });
-      
-      if (team) {
-        // Check if the clue is already found
-        const clueAlreadyFound = team.progress.some(p => p.clue === clue);
-        
-        if (!clueAlreadyFound) {
-          // Add the new clue to the progress
-          team.progress.push({ clue: clue, found: true, timestamp: new Date() });
-          await team.save();
-        }
-      } else {
-        // Create a new team if it doesn't exist
-        team = await Team.create({
-          name: teamName,
-          group: group,
-          progress: [{ clue: clue, found: true, timestamp: new Date() }]
-        });
-      }
-      
-      res.json({ success: true, clue: clue, progress: team.progress.length });
-    } catch (error) {
-      console.error('Error updating team progress:', error);
-      res.status(500).json({ success: false, message: 'Server error', error: error.message });
+  // Routes
+  app.post('/api/check-code', async (req, res) => {
+    const { group, code, teamName } = req.body;
+    
+    if (!group || !code || !teamName) {
+      return res.status(400).json({ success: false, message: 'Missing required fields' });
     }
-  } else {
-    res.json({ success: false, message: 'Invalid code' });
-  }
-});
-
-
-app.get('/api/public-progress', async (req, res) => {
+    
+    if (!cluesdata[group]) {
+      return res.status(400).json({ success: false, message: 'Invalid group' });
+    }
+  
+    const clue = checkCode(group, code);
+    
+    if (clue) {
+      try {
+        let team = await Team.findOne({ name: teamName, group: group });
+        
+        if (team) {
+          const clueAlreadyFound = team.progress.some(p => p.clue === clue);
+          
+          if (!clueAlreadyFound) {
+            team.progress.push({ clue: clue, found: true, timestamp: new Date() });
+            await team.save();
+          }
+        } else {
+          team = await Team.create({
+            name: teamName,
+            group: group,
+            progress: [{ clue: clue, found: true, timestamp: new Date() }]
+          });
+        }
+        
+        res.json({ success: true, clue: clue, cluesFound: team.progress.length });
+      } catch (error) {
+        console.error('Error updating team progress:', error);
+        res.status(500).json({ success: false, message: 'Server error', error: error.message });
+      }
+    } else {
+      res.json({ success: false, message: 'Invalid code' });
+    }
+  });
+  
+  app.get('/api/public-progress', async (req, res) => {
     try {
       const teams = await Team.find({}, 'name group progress');
       const publicProgress = teams.map(team => ({
@@ -152,28 +146,7 @@ app.get('/api/public-progress', async (req, res) => {
       res.status(500).json({ message: 'Server error' });
     }
   });
-
-  app.get('/api/team-progress/:teamName', async (req, res) => {
-    try {
-      const team = await Team.findOne({ name: req.params.teamName });
-      if (team) {
-        res.json({
-          name: team.name,
-          group: team.group,
-          progress: team.progress.map(p => ({
-            clue: p.clue,
-            timestamp: p.timestamp
-          }))
-        });
-      } else {
-        res.status(404).json({ message: 'Team not found' });
-      }
-    } catch (error) {
-      console.error('Error fetching team progress:', error);
-      res.status(500).json({ message: 'Server error' });
-    }
+  
+  app.listen(port, () => {
+    console.log(`Scavenger Hunt API listening on port ${port}`);
   });
-
-app.listen(port, () => {
-  console.log(`Scavenger Hunt API listening on port ${port}`);
-});
