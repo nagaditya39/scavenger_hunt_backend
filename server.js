@@ -192,8 +192,8 @@ const cluesdata = {
   try {
     // Find all teams that have completed all 6 clues, regardless of group
     const completedTeams = await Team.find({ 
-      'progress.5': { $exists: true } // Check for the 6th clue (index 5)
-    }).sort({ 'progress.5.timestamp': 1 });
+      'progress.6': { $exists: true } // Check for the 6th clue (index 5)
+    }).sort({ 'progress.6.timestamp': 1 });
 
     // Find the position of the current team
     const position = completedTeams.findIndex(team => team.name === teamName && team.group === group) + 1; // Add 1 because array index is 0-based
