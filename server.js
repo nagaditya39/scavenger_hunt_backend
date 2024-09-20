@@ -7,7 +7,7 @@ const app = express();
 const port = process.env.PORT || 3000;
 
 app.use(cors({
-  origin: 'https://nagaditya39.github.io',
+  origin: ['https://nagaditya39.github.io','https://nagaditya39.github.io/', 'https://nagaditya39.github.io/scavenger_hunt/'],
   methods: ['GET', 'POST'],
   allowedHeaders: ['Content-Type', 'Authorization']
 }));
