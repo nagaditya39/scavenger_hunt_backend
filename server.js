@@ -34,59 +34,62 @@ const Team = mongoose.model('Team', teamSchema);
 // Clues data
 const cluesdata = {
   
-    group1: {
-      'First Clue': '1 ',
-      'Second Clue': '1',
-      'Third Clue': '1',
-      'Fourth Clue': '1',
-      'Fifth Clue': '1',
-      'Sixth Clue': '1',
-    },
-    group2: {
-      'First Clue': '2',
-      'Second Clue': '2',
-      'Third Clue': '2',
-      'Fourth Clue': '2',
-      'Fifth Clue': '2',
-      'Sixth Clue': '2',
-    },
-    group3: {
-      'First Clue': '3',
-      'Second Clue': '3',
-      'Third Clue': '3',
-      'Fourth Clue': '3',
-      'Fifth Clue': '3',
-      'Sixth Clue': '3',
-    },
-    group4: {
-      'First Clue': '4',
-      'Second Clue': '4',
-      'Third Clue': '4',
-      'Fourth Clue': '4',
-      'Fifth Clue': '4',
-      'Sixth Clue': '4',
-    },
-    group5: {
-      'First Clue': '5',
-      'Second Clue': '5',
-      'Third Clue': '5',
-      'Fourth Clue': '5',
-      'Fifth Clue': '5',
-      'Sixth Clue': '5',
-    },
-    group6: {
-      'First Clue': '6',
-      'Second Clue': '6',
-      'Third Clue': '6',
-      'Fourth Clue': '6',
-      'Fifth Clue': '6',
-      'Sixth Clue': '6',
-    }
+  group1: [
+    { name: 'First Clue', code: '1a' },
+    { name: 'Second Clue', code: '1b' },
+    { name: 'Third Clue', code: '1c' },
+    { name: 'Fourth Clue', code: '1d' },
+    { name: 'Fifth Clue', code: '1e' },
+    { name: 'Sixth Clue', code: '1f' },
+  ],
+  group2: [
+    { name: 'First Clue', code: '2a' },
+    { name: 'Second Clue', code: '2b' },
+    { name: 'Third Clue', code: '2c' },
+    { name: 'Fourth Clue', code: '2d' },
+    { name: 'Fifth Clue', code: '2e' },
+    { name: 'Sixth Clue', code: '2f' },
+  ],
+  group3: [
+    { name: 'First Clue', code: '1a' },
+    { name: 'Second Clue', code: '1b' },
+    { name: 'Third Clue', code: '1c' },
+    { name: 'Fourth Clue', code: '1d' },
+    { name: 'Fifth Clue', code: '1e' },
+    { name: 'Sixth Clue', code: '1f' },
+  ],
+  group4: [
+    { name: 'First Clue', code: '2a' },
+    { name: 'Second Clue', code: '2b' },
+    { name: 'Third Clue', code: '2c' },
+    { name: 'Fourth Clue', code: '2d' },
+    { name: 'Fifth Clue', code: '2e' },
+    { name: 'Sixth Clue', code: '2f' },
+  ],
+  group5: [
+    { name: 'First Clue', code: '1a' },
+    { name: 'Second Clue', code: '1b' },
+    { name: 'Third Clue', code: '1c' },
+    { name: 'Fourth Clue', code: '1d' },
+    { name: 'Fifth Clue', code: '1e' },
+    { name: 'Sixth Clue', code: '1f' },
+  ],
+  group6: [
+    { name: 'First Clue', code: '2a' },
+    { name: 'Second Clue', code: '2b' },
+    { name: 'Third Clue', code: '2c' },
+    { name: 'Fourth Clue', code: '2d' },
+    { name: 'Fifth Clue', code: '2e' },
+    { name: 'Sixth Clue', code: '2f' },
+  ],
   };
 
-  function checkCode(group, code) {
+  function checkCode(group, code, currentClueIndex) {
     const clues = cluesdata[group];
-    return Object.keys(clues).find(clue => clues[clue] === code) || null;
+    if (currentClueIndex >= clues.length) {
+      return null;
+    }
+    return clues[currentClueIndex].code === code ? clues[currentClueIndex].name : null;
   }
   
   // Routes
@@ -113,41 +116,67 @@ const cluesdata = {
         });
       }
   
-      // Check if the code is valid for this team's group
-      const clue = checkCode(group, code);
+      const currentClueIndex = team.progress.length;
+      const clue = checkCode(group, code, currentClueIndex);
       
       if (clue) {
-        const clueAlreadyFound = team.progress.some(p => p.clue === clue);
+        team.progress.push({ clue: clue, found: true, timestamp: new Date() });
+        await team.save();
         
-        if (!clueAlreadyFound) {
-          team.progress.push({ clue: clue, found: true, timestamp: new Date() });
-          await team.save();
-        }
+        const nextClueIndex = currentClueIndex + 1;
+        const nextClue = nextClueIndex < cluesdata[group].length ? cluesdata[group][nextClueIndex].name : null;
         
-        res.json({ success: true, clue: clue, cluesFound: team.progress.length });
+        res.json({ 
+          success: true, 
+          clue: clue, 
+          cluesFound: team.progress.length,
+          nextClue: nextClue
+        });
       } else {
-        res.json({ success: false, message: 'Invalid code for this team' });
+        res.json({ success: false, message: 'Invalid code or not the current clue' });
       }
     } catch (error) {
       console.error('Error updating team progress:', error);
       res.status(500).json({ success: false, message: 'Server error', error: error.message });
     }
   });
+
   
   app.get('/api/public-progress', async (req, res) => {
-    try {
-      const teams = await Team.find({}, 'name group progress');
-      const publicProgress = teams.map(team => ({
-        name: team.name,
-        group: team.group,
-        cluesFound: team.progress.length
-      }));
-      res.json(publicProgress);
-    } catch (error) {
-      console.error('Error fetching public progress:', error);
-      res.status(500).json({ message: 'Server error' });
+  try {
+    const teams = await Team.find({}, 'name group progress');
+    const publicProgress = teams.map(team => ({
+      name: team.name,
+      group: team.group,
+      cluesFound: team.progress.length
+    }));
+    res.json(publicProgress);
+  } catch (error) {
+    console.error('Error fetching public progress:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+app.get('/api/team-progress/:teamName/:group', async (req, res) => {
+  const { teamName, group } = req.params;
+  try {
+    const team = await Team.findOne({ name: teamName, group: group });
+    if (team) {
+      const currentClueIndex = team.progress.length;
+      const nextClue = currentClueIndex < cluesdata[group].length ? cluesdata[group][currentClueIndex].name : null;
+      res.json({ 
+        cluesFound: team.progress.length,
+        nextClue: nextClue
+      });
+    } else {
+      res.json({ cluesFound: 0, nextClue: cluesdata[group][0].name });
     }
-  });
+  } catch (error) {
+    console.error('Error fetching team progress:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
   
   app.listen(port, () => {
     console.log(`Scavenger Hunt API listening on port ${port}`);
