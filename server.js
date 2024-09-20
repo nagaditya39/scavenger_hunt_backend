@@ -156,12 +156,14 @@ app.get('/api/team-progress/:teamName/:group', async (req, res) => {
     if (team) {
       const currentClueIndex = team.progress.length;
       const nextClueNumber = currentClueIndex + 1;
+      const currentClueContent = currentClueIndex > 0 ? cluesdata[group][currentClueIndex - 1].content : null;
       res.json({ 
         cluesFound: team.progress.length,
-        nextClueNumber: nextClueNumber <= cluesdata[group].length ? nextClueNumber : null
+        nextClueNumber: nextClueNumber <= cluesdata[group].length ? nextClueNumber : null,
+        currentClueContent: currentClueContent
       });
     } else {
-      res.json({ cluesFound: 0, nextClueNumber: 1 });
+      res.json({ cluesFound: 0, nextClueNumber: 1, currentClueContent: null });
     }
   } catch (error) {
     console.error('Error fetching team progress:', error);
