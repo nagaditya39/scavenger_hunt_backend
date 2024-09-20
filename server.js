@@ -34,7 +34,7 @@ const Team = mongoose.model('Team', teamSchema);
 // Clues data
 const cluesdata = {
   
-  group1: [
+  Air: [
     { number: 1, code: '1a', content: 'Actual content of first clue for group 1' },
     { number: 2, code: '1b', content: 'Actual content of second clue for group 1' },
     { number: 3, code: '1c', content: 'Actual content of third clue for group 1' },
@@ -42,7 +42,7 @@ const cluesdata = {
     { number: 5, code: '1e', content: 'Actual content of fifth clue for group 1' },
     { number: 6, code: '1f', content: 'Actual content of sixth clue for group 1' },
   ],
-  group2: [
+  Fire: [
     { number: 1, code: '1a', content: 'Actual content of first clue for group 1' },
     { number: 2, code: '1b', content: 'Actual content of second clue for group 1' },
     { number: 3, code: '1c', content: 'Actual content of third clue for group 1' },
@@ -50,7 +50,7 @@ const cluesdata = {
     { number: 5, code: '1e', content: 'Actual content of fifth clue for group 1' },
     { number: 6, code: '1f', content: 'Actual content of sixth clue for group 1' },
   ],
-  group3: [
+  Water: [
     { number: 1, code: '1a', content: 'Actual content of first clue for group 1' },
     { number: 2, code: '1b', content: 'Actual content of second clue for group 1' },
     { number: 3, code: '1c', content: 'Actual content of third clue for group 1' },
@@ -58,7 +58,7 @@ const cluesdata = {
     { number: 5, code: '1e', content: 'Actual content of fifth clue for group 1' },
     { number: 6, code: '1f', content: 'Actual content of sixth clue for group 1' },
   ],
-  group4: [
+  Earth: [
     { number: 1, code: '1a', content: 'Actual content of first clue for group 1' },
     { number: 2, code: '1b', content: 'Actual content of second clue for group 1' },
     { number: 3, code: '1c', content: 'Actual content of third clue for group 1' },
@@ -66,15 +66,7 @@ const cluesdata = {
     { number: 5, code: '1e', content: 'Actual content of fifth clue for group 1' },
     { number: 6, code: '1f', content: 'Actual content of sixth clue for group 1' },
   ],
-  group5: [
-    { number: 1, code: '1a', content: 'Actual content of first clue for group 1' },
-    { number: 2, code: '1b', content: 'Actual content of second clue for group 1' },
-    { number: 3, code: '1c', content: 'Actual content of third clue for group 1' },
-    { number: 4, code: '1d', content: 'Actual content of fourth clue for group 1' },
-    { number: 5, code: '1e', content: 'Actual content of fifth clue for group 1' },
-    { number: 6, code: '1f', content: 'Actual content of sixth clue for group 1' },
-  ],
-  group6: [
+  Ether: [
     { number: 1, code: '1a', content: 'Actual content of first clue for group 1' },
     { number: 2, code: '1b', content: 'Actual content of second clue for group 1' },
     { number: 3, code: '1c', content: 'Actual content of third clue for group 1' },
