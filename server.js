@@ -24,7 +24,7 @@ const teamSchema = new mongoose.Schema({
   progress: [{
     clue: String,
     found: Boolean,
-    timestamp: Date
+    timestamp: { type: Date, default: Date.now }
   }]
 });
 
@@ -133,7 +133,12 @@ const cluesdata = {
           nextClueNumber: nextClueNumber <= cluesdata[group].length ? nextClueNumber : null
         });
       } else {
-        res.json({ success: false, message: 'Invalid code or not the current clue' });
+        res.json({ 
+          success: true, 
+          clueContent: clue.content,
+          cluesFound: team.progress.length,
+          nextClueNumber: nextClueNumber <= cluesdata[group].length ? nextClueNumber : null
+        });
       }
     } catch (error) {
       console.error('Error updating team progress:', error);
@@ -176,6 +181,30 @@ app.get('/api/team-progress/:teamName/:group', async (req, res) => {
     }
   } catch (error) {
     console.error('Error fetching team progress:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+app.get('/api/team-position/:teamName/:group', async (req, res) => {
+  const { teamName, group } = req.params;
+  try {
+    // Find all teams that have completed all 6 clues
+    const completedTeams = await Team.find({ 
+      'progress.6': { $exists: true } 
+    }).sort({ 'progress.5.timestamp': 1 });
+
+    // Find the position of the current team
+    const position = completedTeams.findIndex(team => 
+      team.name === teamName && team.group === group
+    ) + 1; // Add 1 because array index is 0-based
+
+    if (position > 0) {
+      res.json({ position });
+    } else {
+      res.status(404).json({ message: 'Team not found or hasn\'t completed all clues' });
+    }
+  } catch (error) {
+    console.error('Error fetching team position:', error);
     res.status(500).json({ message: 'Server error' });
   }
 });
