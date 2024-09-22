@@ -109,12 +109,11 @@ const cluesdata = {
       if (!team) {
         // If the team doesn't exist, create it
         try {
-          team = new Team({
+          team = await Team.create({
             name: teamName.trim(),
             group: group,
             progress: []
           });
-          await team.save();
         } catch (createError) {
           // If creation fails due to duplicate key, find the existing team
           if (createError.code === 11000) {
