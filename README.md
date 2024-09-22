@@ -11,7 +11,7 @@
 
 The powerful backend serving the Scavenger Hunt application.
 
-[Features](#features) • [Setup](#setup-and-installation) • [API Endpoints](#api-endpoints) • [Deployment](#deployment) • [Scripts](#scripts) • [Contributing](#contributing)
+[Features](#-features) • [Setup](#%EF%B8%8F-setup-and-installation) • [API Endpoints](#%EF%B8%8F-api-endpoints) • [Deployment](#-deployment) • [Scripts](#-scripts) • [Contributing](#-contributing)
 
 </div>
 
