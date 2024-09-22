@@ -15,6 +15,8 @@ The powerful backend serving the Scavenger Hunt application.
 
 </div>
 
+This is the backend repository for the Scavenger Hunt application. For the frontend code, please visit the [Scavenger Hunt Frontend Repository](https://github.com/nagaditya39/scavenger_hunt).
+
 ## 🌟 Features
 
 - 📊 Team progress tracking
