@@ -96,11 +96,15 @@ const cluesdata = {
   app.post('/api/check-code', async (req, res) => {
     const { group, code, teamName } = req.body;
     
+    console.log(`Received request for team: ${teamName}, group: ${group}, code: ${code}`);
+  
     if (!group || !code || !teamName) {
+      console.log('Missing required fields');
       return res.status(400).json({ success: false, message: 'Missing required fields' });
     }
     
     if (!cluesdata[group]) {
+      console.log(`Invalid group: ${group}`);
       return res.status(400).json({ success: false, message: 'Invalid group' });
     }
   
@@ -108,6 +112,8 @@ const cluesdata = {
     session.startTransaction();
   
     try {
+      console.log('Starting transaction');
+      
       // Find the team and lock the document
       let team = await Team.findOneAndUpdate(
         {
@@ -123,17 +129,24 @@ const cluesdata = {
         }
       );
   
+      console.log(`Team found/created: ${JSON.stringify(team)}`);
+  
       const currentClueIndex = team.progress.length;
+      console.log(`Current clue index: ${currentClueIndex}`);
+  
       if (currentClueIndex >= cluesdata[group].length) {
+        console.log('All clues have been found');
         await session.abortTransaction();
         return res.json({ success: false, message: 'All clues have been found' });
       }
   
       const clue = checkCode(group, code.toUpperCase(), currentClueIndex);
+      console.log(`Checked code. Result: ${JSON.stringify(clue)}`);
   
       if (clue) {
         // Check if this exact code has already been submitted
         const codeAlreadySubmitted = team.progress.some(p => p.code === clue.code);
+        console.log(`Code already submitted: ${codeAlreadySubmitted}`);
   
         if (!codeAlreadySubmitted && team.progress.length < 7) {
           const newProgress = [...team.progress, {
@@ -143,6 +156,8 @@ const cluesdata = {
             found: true,
             timestamp: new Date()
           }];
+  
+          console.log(`Attempting to update team document. Current version: ${team.version}`);
   
           // Update the team document with new progress, ensuring no concurrent modifications
           const result = await Team.findOneAndUpdate(
@@ -161,14 +176,18 @@ const cluesdata = {
               session
             }
           );
+          
+          console.log(`Update result: ${JSON.stringify(result)}`);
   
           if (!result) {
+            console.log('Concurrent modification detected or code already submitted');
             throw new Error('Concurrent modification detected or code already submitted');
           }
   
           const nextClueNumber = currentClueIndex + 2;
   
           await session.commitTransaction();
+          console.log('Transaction committed successfully');
   
           res.json({
             success: true,
@@ -177,10 +196,12 @@ const cluesdata = {
             nextClueNumber: nextClueNumber <= cluesdata[group].length ? nextClueNumber : null
           });
         } else {
+          console.log('Clue already found or all clues completed');
           await session.abortTransaction();
           res.json({ success: false, message: 'Clue already found or all clues completed' });
         }
       } else {
+        console.log('Invalid code or not the current clue');
         await session.abortTransaction();
         res.json({ success: false, message: 'Invalid code or not the current clue' });
       }
@@ -194,6 +215,7 @@ const cluesdata = {
       }
     } finally {
       session.endSession();
+      console.log('Session ended');
     }
   });
 
