@@ -22,7 +22,9 @@ const teamSchema = new mongoose.Schema({
   name: String,
   group: String,
   progress: [{
-    clue: String,
+    clueNumber: Number,
+    code: String,
+    content: String,
     found: Boolean,
     timestamp: { type: Date, default: Date.now }
   }]
@@ -37,7 +39,7 @@ const cluesdata = {
   Air: [
     { number: 1, code: 'H2A3D9', content: "Where fun and laughter fill the air, look towards where children play with care. The board says 'kids', a hint to find, where swings and slides are easy to spot, and joy is intertwined." },
     { number: 2, code: 'ZY4G5N', content: "To find the board that speaks from the heart, love and head to where the club makes a splashy start." },
-    { number: 3, code: 'W8L7Q2', content: "My beams are wood but my body is concrete, it provides passage to those who wants to avoid the water, find the treasure at my feet"},
+    { number: 3, code: 'W8L7Q2', content: "I provide passage to those who wants to avoid the water, My beams are wood but my body is concrete, find the treasure at my feet"},
     { number: 4, code: 'T6V9X1', content: "By the figure-eight, where waters flow, between the lazy river moves steady and slow, Two Metallic friends await by the pool, your path leads through the trees - to where shadows rule."},
     { number: 5, code: 'M3P5B7', content: "In the land of still waters, the path south leads where the gentle current flows, but only those who rise above the mark of four are granted passage. The young and short must turn away, for the journey ahead isn't for the faint-hearted."},
     { number: 6, code: 'J9F8C4', content: "I am the space where stars reside, Beyond the reach of wind and tide, Invisible, boundless, the cosmic glue, What am I, the fifth element true?" },
@@ -102,20 +104,20 @@ const cluesdata = {
     }
   
     try {
-      let team = await Team.findOne({ name: teamName, group: group });
+      let team = await Team.findOne({ name: teamName.trim(), group: group });
       
       if (!team) {
         // If the team doesn't exist, create it
         try {
-          team = await Team.create({
-            name: teamName,
+          team = new Team.create({
+            name: teamName.trim(),
             group: group,
             progress: []
           });
         } catch (createError) {
           // If creation fails due to duplicate key, find the existing team
           if (createError.code === 11000) {
-            team = await Team.findOne({ name: teamName, group: group });
+            team = await Team.findOne({ name: teamName.trim(), group: group });
           } else {
             console.error('Error creating team:', createError);
             return res.status(500).json({ success: false, message: 'Error creating team' });
@@ -124,12 +126,23 @@ const cluesdata = {
       }
   
       const currentClueIndex = team.progress.length;
+      if (currentClueIndex >= cluesdata[group].length) {
+        return res.json({ success: false, message: 'All clues have been found' });
+      }
       const clue = checkCode(group, code.toUpperCase(), currentClueIndex);
       
       if (clue) {
-        team.progress.push({ clueNumber: clue.number, found: true, timestamp: new Date() });
+        if (team.progress.length < 7) {
+          team.progress.push({
+            clueNumber: clue.number,
+            code: clue.code,
+            content: clue.content,
+            found: true,
+            timestamp: new Date()
+          });
         await team.save();
-        
+        }
+
         const nextClueNumber = currentClueIndex + 2; // +2 because we're 0-indexed and want to show the human-readable number
         
         res.json({ 
@@ -168,11 +181,15 @@ const cluesdata = {
   app.get('/api/team-progress/:teamName/:group', async (req, res) => {
   const { teamName, group } = req.params;
   try {
-    const team = await Team.findOne({ name: teamName, group: group });
+    const team = await Team.findOne({ name: teamName.trim(), group: group });
     if (team) {
       const currentClueIndex = team.progress.length;
       const nextClueNumber = currentClueIndex + 1;
-      const currentClueContent = currentClueIndex > 0 ? cluesdata[group][currentClueIndex - 1].content : null;
+      let currentClueContent = null;
+
+      if (currentClueIndex > 0) {
+        currentClueContent = team.progress[currentClueIndex - 1].content;
+      }
       res.json({ 
         cluesFound: team.progress.length,
         nextClueNumber: nextClueNumber <= cluesdata[group].length ? nextClueNumber : null,
@@ -196,7 +213,7 @@ const cluesdata = {
     }).sort({ 'progress.6.timestamp': 1 });
 
     // Find the position of the current team
-    const position = completedTeams.findIndex(team => team.name === teamName && team.group === group) + 1; // Add 1 because array index is 0-based
+    const position = completedTeams.findIndex(team => team.name === teamName.trim() && team.group === group) + 1; // Add 1 because array index is 0-based
 
     if (position > 0) {
       res.json({ position, totalTeams: completedTeams.length });
