@@ -2,7 +2,7 @@
 
 <div align="center">
 
-<img src="./src/Treasure_hunt.logo.jpg" alt="Scavenger Hunt Logo" width="200" />
+<img src="./res/Treasure_hunt.logo.jpg" alt="Scavenger Hunt Logo" width="200" />
 
 
 [![Node.js](https://img.shields.io/badge/Node.js-339933?style=for-the-badge&logo=nodedotjs&logoColor=white)](https://nodejs.org/)
@@ -171,7 +171,7 @@ Please ensure you update tests as appropriate and adhere to the existing coding 
 ---
 
 <div align="center">
-  <img src="./src/BongoCatTypingGIF.gif" alt="BongoCatTypingGIF" width="100" /><br>
+  <img src="./res/BongoCatTypingGIF.gif" alt="BongoCatTypingGIF" width="100" /><br>
   Made by <strong>Aditya Nag</strong>
 </div>
 
