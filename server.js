@@ -114,6 +114,7 @@ const cluesdata = {
             group: group,
             progress: []
           });
+          await team.save();
         } catch (createError) {
           // If creation fails due to duplicate key, find the existing team
           if (createError.code === 11000) {
