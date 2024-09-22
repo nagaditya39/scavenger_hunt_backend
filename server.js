@@ -109,7 +109,7 @@ const cluesdata = {
       if (!team) {
         // If the team doesn't exist, create it
         try {
-          team = new Team.create({
+          team = new Team({
             name: teamName.trim(),
             group: group,
             progress: []
