@@ -109,19 +109,23 @@ const cluesdata = {
   
     try {
       // Find the team and lock the document
-      let team = await Team.findOneAndUpdate(
+      let team = await Team.findOne(
         {
           name: teamName.trim(),
           group: group
         },
-        { $setOnInsert: { name: teamName.trim(), group: group, progress: [], version: 0 } },
-        { 
-          new: true, 
-          upsert: true, 
-          session,
-          setDefaultsOnInsert: true
-        }
+        null,
+        { session }
       );
+  
+      if (!team) {
+        team = new Team({
+          name: teamName.trim(),
+          group: group,
+          progress: [],
+          version: 0
+        });
+      }
   
       const currentClueIndex = team.progress.length;
       if (currentClueIndex >= cluesdata[group].length) {
@@ -144,27 +148,10 @@ const cluesdata = {
             timestamp: new Date()
           }];
   
-          // Update the team document with new progress, ensuring no concurrent modifications
-          const result = await Team.findOneAndUpdate(
-            { 
-              _id: team._id, 
-              version: team.version,
-              'progress.length': currentClueIndex, // Ensure the progress length hasn't changed
-              [`progress.${currentClueIndex}.code`]: { $ne: clue.code } // Ensure this code hasn't been added
-            },
-            { 
-              $set: { progress: newProgress },
-              $inc: { version: 1 }
-            },
-            { 
-              new: true,
-              session
-            }
-          );
+          team.progress = newProgress;
+          team.version += 1;
   
-          if (!result) {
-            throw new Error('Concurrent modification detected or code already submitted');
-          }
+          await team.save({ session });
   
           const nextClueNumber = currentClueIndex + 2;
   
@@ -187,8 +174,8 @@ const cluesdata = {
     } catch (error) {
       await session.abortTransaction();
       console.error('Error checking code:', error);
-      if (error.message === 'Concurrent modification detected or code already submitted') {
-        res.status(409).json({ success: false, message: 'Concurrent modification detected or code already submitted, please refresh and try again' });
+      if (error.name === 'VersionError') {
+        res.status(409).json({ success: false, message: 'Concurrent modification detected, please try again' });
       } else {
         res.status(500).json({ success: false, message: 'Server error', error: error.message });
       }
