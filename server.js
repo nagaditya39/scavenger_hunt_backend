@@ -27,8 +27,9 @@ const teamSchema = new mongoose.Schema({
     content: String,
     found: Boolean,
     timestamp: { type: Date, default: Date.now }
-  }]
-});
+  }],
+  version: { type: Number, default: 0 }
+}, {versionKey: false});
 
 teamSchema.index({ name: 1, group: 1 }, { unique: true });
 const Team = mongoose.model('Team', teamSchema);
@@ -88,7 +89,7 @@ const cluesdata = {
     if (currentClueIndex >= clues.length) {
       return null;
     }
-    return clues[currentClueIndex].code === code.toUpperCase() ? clues[currentClueIndex] : null;
+    return clues[currentClueIndex].code === code.toUpperCase().trim() ? clues[currentClueIndex] : null;
   }
   
   // Routes
@@ -103,63 +104,100 @@ const cluesdata = {
       return res.status(400).json({ success: false, message: 'Invalid group' });
     }
   
+    const session = await mongoose.startSession();
+    session.startTransaction();
+  
     try {
-      let team = await Team.findOne({ name: teamName.trim(), group: group });
-      
-      if (!team) {
-        // If the team doesn't exist, create it
-        try {
-          team = await Team.create({
-            name: teamName.trim(),
-            group: group,
-            progress: []
-          });
-        } catch (createError) {
-          // If creation fails due to duplicate key, find the existing team
-          if (createError.code === 11000) {
-            team = await Team.findOne({ name: teamName.trim(), group: group });
-          } else {
-            console.error('Error creating team:', createError);
-            return res.status(500).json({ success: false, message: 'Error creating team' });
-          }
+      // Find the team and lock the document
+      let team = await Team.findOneAndUpdate(
+        {
+          name: teamName.trim(),
+          group: group
+        },
+        { $setOnInsert: { name: teamName.trim(), group: group, progress: [], version: 0 } },
+        { 
+          new: true, 
+          upsert: true, 
+          session,
+          setDefaultsOnInsert: true
         }
-      }
+      );
   
       const currentClueIndex = team.progress.length;
       if (currentClueIndex >= cluesdata[group].length) {
+        await session.abortTransaction();
         return res.json({ success: false, message: 'All clues have been found' });
       }
+  
       const clue = checkCode(group, code.toUpperCase(), currentClueIndex);
-      
+  
       if (clue) {
-        if (team.progress.length < 7) {
-          team.progress.push({
+        // Check if this exact code has already been submitted
+        const codeAlreadySubmitted = team.progress.some(p => p.code === clue.code);
+  
+        if (!codeAlreadySubmitted && team.progress.length < 7) {
+          const newProgress = [...team.progress, {
             clueNumber: clue.number,
             code: clue.code,
             content: clue.content,
             found: true,
             timestamp: new Date()
+          }];
+  
+          // Update the team document with new progress, ensuring no concurrent modifications
+          const result = await Team.findOneAndUpdate(
+            { 
+              _id: team._id, 
+              version: team.version,
+              'progress.length': currentClueIndex, // Ensure the progress length hasn't changed
+              [`progress.${currentClueIndex}.code`]: { $ne: clue.code } // Ensure this code hasn't been added
+            },
+            { 
+              $set: { progress: newProgress },
+              $inc: { version: 1 }
+            },
+            { 
+              new: true,
+              session
+            }
+          );
+  
+          if (!result) {
+            throw new Error('Concurrent modification detected or code already submitted');
+          }
+  
+          const nextClueNumber = currentClueIndex + 2;
+  
+          await session.commitTransaction();
+  
+          res.json({
+            success: true,
+            clueContent: clue.content,
+            cluesFound: newProgress.length,
+            nextClueNumber: nextClueNumber <= cluesdata[group].length ? nextClueNumber : null
           });
-        await team.save();
+        } else {
+          await session.abortTransaction();
+          res.json({ success: false, message: 'Clue already found or all clues completed' });
         }
-
-        const nextClueNumber = currentClueIndex + 2; // +2 because we're 0-indexed and want to show the human-readable number
-        
-        res.json({ 
-          success: true, 
-          clueContent: clue.content,
-          cluesFound: team.progress.length,
-          nextClueNumber: nextClueNumber <= cluesdata[group].length ? nextClueNumber : null
-        });
       } else {
-        // Invalid code - send a proper response instead of throwing an error
+        await session.abortTransaction();
         res.json({ success: false, message: 'Invalid code or not the current clue' });
       }
     } catch (error) {
+      await session.abortTransaction();
       console.error('Error checking code:', error);
-      res.status(500).json({ success: false, message: 'Server error', error: error.message });
+      if (error.message === 'Concurrent modification detected or code already submitted') {
+        res.status(409).json({ success: false, message: 'Concurrent modification detected or code already submitted, please refresh and try again' });
+      } else {
+        res.status(500).json({ success: false, message: 'Server error', error: error.message });
+      }
+    } finally {
+      session.endSession();
     }
   });
+
+
 
 
   

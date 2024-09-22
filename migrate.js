@@ -67,7 +67,7 @@ const cluesdata = {
     async function migrateData() {
         try {
           // Connect to your MongoDB database
-          await mongoose.connect('removeed-uri, need to add when running', {
+          await mongoose.connect('removed-uri, need to add when running', {
             useNewUrlParser: true,
             useUnifiedTopology: true,
           });
