@@ -2,7 +2,8 @@
 
 <div align="center">
 
-![Scavenger Hunt Logo](https://nagaditya39.github.io/scavenger_hunt/Alstom_logo.png)
+<img src="./src/Treasure_hunt.logo.jpg" alt="Scavenger Hunt Logo" width="200" />
+
 
 [![Node.js](https://img.shields.io/badge/Node.js-339933?style=for-the-badge&logo=nodedotjs&logoColor=white)](https://nodejs.org/)
 [![Express.js](https://img.shields.io/badge/Express.js-000000?style=for-the-badge&logo=express&logoColor=white)](https://expressjs.com/)
@@ -170,5 +171,7 @@ Please ensure you update tests as appropriate and adhere to the existing coding 
 ---
 
 <div align="center">
-Made with ❤️ by [Aditya Nag]
+  <img src="./src/BongoCatTypingGIF.gif" alt="BongoCatTypingGIF" width="100" /><br>
+  Made by <strong>Aditya Nag</strong>
 </div>
+
