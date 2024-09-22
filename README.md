@@ -139,8 +139,7 @@ scavenger_hunt_backend/
 ├── migrate.js
 ├── cleanup.js
 ├── package.json
-├── README.md
-└── .gitignore
+└── README.md
 ```
 
 ## 🔒 Security
