@@ -31,7 +31,7 @@ This is the backend repository for the Scavenger Hunt application. For the front
 1. **Clone the repository**
 
    ```bash
-   git clone https://github.com/yourusername/scavenger_hunt_backend.git
+   git clone https://github.com/nagaditya39/scavenger_hunt_backend.git
    cd scavenger_hunt_backend
    ```
 
